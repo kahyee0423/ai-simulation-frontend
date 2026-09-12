@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Loader2, Code, Terminal, Cpu, Check, RefreshCw, GripHorizontal } from "lucide-react";
+import { Play, Loader2, Code, Terminal, Cpu, Check, RefreshCw, GripHorizontal, FlaskConical, ShieldCheck, Sigma, ScanSearch } from "lucide-react";
 import { AgentStep, TabId, SimulationResult } from "./utils/type";
 import HeroSection from "./components/HeroSection";
 import ResearchReport from "./components/ResearchReport";
@@ -34,9 +34,10 @@ export default function Home() {
     setLoading(true);
     setHasStarted(true);
     setResult(null);
-    setCurrentStep("planning");
+    setCurrentStep("parsing");
 
-    const timer1 = setTimeout(() => setCurrentStep("executing"), 1500);
+    const timer1 = setTimeout(() => setCurrentStep("planning"), 2000);
+    const timer2 = setTimeout(() => setCurrentStep("executing"), 5000);
 
     try {
       const response = await fetch(API_URL, {
@@ -47,6 +48,7 @@ export default function Home() {
 
       const data = await response.json();
       clearTimeout(timer1);
+      clearTimeout(timer2);
 
       if (response.ok) {
         setResult(data);
@@ -225,14 +227,34 @@ export default function Home() {
 
                 {/* Status Badge */}
                 <div className="flex items-center gap-2 pb-1">
+                  {currentStep === "parsing" && (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Parsing scenario...
+                    </span>
+                  )}
                   {currentStep === "planning" && (
                     <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
                       <Loader2 className="w-3 h-3 animate-spin" /> Planning...
                     </span>
                   )}
+                  {currentStep === "critiquing" && (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">
+                      <ShieldCheck className="w-3 h-3 animate-pulse" /> Critic reviewing...
+                    </span>
+                  )}
                   {currentStep === "executing" && (
                     <span className="inline-flex items-center gap-1 text-[11px] text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">
-                      <Loader2 className="w-3 h-3 animate-spin" /> Executing...
+                      <FlaskConical className="w-3 h-3 animate-bounce" /> Simulating...
+                    </span>
+                  )}
+                  {currentStep === "validating" && (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-teal-400 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full">
+                      <ScanSearch className="w-3 h-3 animate-pulse" /> Validating results...
+                    </span>
+                  )}
+                  {currentStep === "analyzing" && (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full">
+                      <Sigma className="w-3 h-3 animate-pulse" /> Analyzing...
                     </span>
                   )}
                   {currentStep === "retrying" && (

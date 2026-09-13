@@ -13,16 +13,11 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentStep, setCurrentStep] = useState<AgentStep>("idle");
-  
-  // Tab layout state
   const [activeTab, setActiveTab] = useState<TabId>("code");
   const [tabOrder, setTabOrder] = useState<TabId[]>(["code", "output"]);
   const [isBottomDocked, setIsBottomDocked] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(true);
-
-  // Drag and drop state
   const [draggedTab, setDraggedTab] = useState<TabId | null>(null);
-
   const [result, setResult] = useState<SimulationResult | null>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/simulate";
@@ -121,13 +116,11 @@ export default function Home() {
 
   return (
     <main className="h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 p-4 md:p-6 flex flex-col selection:bg-indigo-500 selection:text-white">
-      <div className="max-w-7xl w-full mx-auto flex flex-col h-full">
-        
-        {/* Dynamic Header Layout */}
+      <div className="w-full mx-auto flex flex-col h-full">
         {hasStarted ? (
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 shrink-0">
-            <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              AI Simulation Scientist
+          <div className="flex items-center justify-between shrink-0">
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-200">
+              AI Simulation Laboratory
             </h1>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[11px] font-semibold tracking-wide uppercase border border-indigo-500/20 shadow-sm">
               <Cpu className="w-3 h-3" /> Powered by Gemini & LangGraph
@@ -137,10 +130,10 @@ export default function Home() {
           <HeroSection prompt={prompt} setPrompt={setPrompt} loading={loading} onSimulate={handleSimulate} />
         )}
 
-        {/* Compact input bar after launch (Scrollable, Scrollbar Hidden) */}
+        {/* Compact input bar after launch (items-start enabled for auto-growth) */}
         {hasStarted && (
-          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-2xl shadow-xl transition-all duration-300 shrink-0 p-3 max-w-7xl w-full mx-auto">
-            <form onSubmit={handleSimulate} className="flex gap-3 items-end">
+          <div className="transition-all duration-300 shrink-0 pt-2.5 w-full mx-auto">
+            <form onSubmit={handleSimulate} className="flex gap-3 items-start">
               <div className="relative flex-1">
                 <textarea
                   value={prompt}
@@ -152,14 +145,14 @@ export default function Home() {
                   }}
                   placeholder="e.g., Simulate 50 delivery drones navigating through a 10x10 city grid..."
                   rows={1}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-xs md:text-sm resize-none shadow-inner transition-all max-h-40 leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-xs md:text-sm resize-none shadow-inner transition-all max-h-40 leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading || !prompt.trim()}
-                className="flex items-center justify-center gap-2 bg-transparent border border-slate-700 hover:border-purple-500 text-white font-medium rounded-xl transition-all shadow-lg text-xs md:text-sm whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed px-6 h-12 shrink-0"
+                className="flex items-center justify-center gap-2 bg-transparent border border-slate-700 hover:border-purple-500 text-white font-medium rounded-xl transition-all shadow-lg text-xs md:text-sm whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed px-6 py-2.5 shrink-0 h-[42px]"
               >
                 {loading ? (
                   <>
@@ -167,9 +160,7 @@ export default function Home() {
                     <span>Running...</span>
                   </>
                 ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5 fill-current text-purple-400" />
-                    <span>Launch Agent</span>
+                  <><span>Launch Agent</span>
                   </>
                 )}
               </button>
@@ -179,7 +170,7 @@ export default function Home() {
 
         {/* Main Split Layout */}
         {hasStarted && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 pb-2 mt-3">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 pb-2 mt-2.5">
             
             <ResearchReport currentStep={currentStep} result={result} loading={loading} />
 

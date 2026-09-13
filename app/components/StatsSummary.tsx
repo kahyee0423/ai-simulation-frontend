@@ -1,6 +1,7 @@
+// frontend/src/components/StatsSummary.tsx
 "use client";
 
-import { BarChart3 } from "lucide-react";
+import { BarChart3, CheckCircle2, AlertTriangle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { SimulationResult } from "../utils/type";
 
@@ -11,6 +12,9 @@ interface StatsSummaryProps {
 
 export default function StatsSummary({ result, loading }: StatsSummaryProps) {
   const summary = result?.statistical_summary;
+  const criticApproved = result?.critic_approved;
+  const criticFeedback = result?.critic_feedback;
+  const hasCriticData = Boolean(criticFeedback && criticFeedback.length > 0);
 
   if (!summary && !loading) return null;
 
@@ -22,9 +26,22 @@ export default function StatsSummary({ result, loading }: StatsSummaryProps) {
           <BarChart3 className="w-4 h-4 text-cyan-400" />
           <span className="text-xs font-semibold text-slate-200">Statistical Analysis</span>
         </div>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">
-          Python-computed
-        </span>
+
+        {hasCriticData ? (
+          criticApproved ? (
+            <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+              <CheckCircle2 className="w-3 h-3" /> Critic Approved
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
+              <AlertTriangle className="w-3 h-3" /> Critic Issues
+            </span>
+          )
+        ) : (
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">
+            Python-computed
+          </span>
+        )}
       </div>
 
       {/* Body */}

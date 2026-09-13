@@ -3,21 +3,15 @@ export type TabId = "code" | "output" | "spec" | "stats";
 
 export interface SimulationResult {
   status?: string;
-  // Phase 1 — Specification
-  simulation_spec?: string;
-  // Phase 2 — Code
-  plan?: string;
+  simulation_spec?: string;  // Phase 1 — Specification
+  plan?: string; // Phase 2 — Code
   code?: string;
   critic_feedback?: string;
   critic_approved?: boolean;
-  // Phase 3 — Execution
-  output?: string;
+  output?: string; // Phase 3 — Execution
   error?: string;
   structured_results?: string;
-  // Phase 4 — Validation
-  validation_report?: string;
-  // Phase 5 — Statistics
-  statistical_summary?: string;
-  // Phase 6 — Report
-  report?: string;
+  validation_report?: string;  // Phase 4 — Validation
+  statistical_summary?: string;   // Phase 5 — Statistics
+  report?: string;  // Phase 6 — Report
 }

@@ -20,8 +20,8 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate }: 
       <div className="relative z-10 w-full max-w-5xl">
         <div className="text-center">
 
-          <h1 className="mt-5 text-5xl md:text-7xl font-black tracking-[-0.04em] leading-[0.95] bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
-            AI Simulation Scientist
+          <h1 className="mt-5 text-5xl md:text-7xl font-bold tracking-[-0.04em] leading-[0.95] bg-gradient-to-r bg-clip-text">
+            AI Simulation Laboratory
           </h1>
 
           <p className="mt-5 max-w-2xl mx-auto text-sm md:text-base text-slate-400 leading-7">
@@ -71,7 +71,7 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate }: 
                   <button
                     type="submit"
                     disabled={loading || !prompt.trim()}
-                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-950/30 transition-all hover:-translate-y-0.5 hover:shadow-purple-900/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-transparent px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:border-purple-500 hover:text-white hover:shadow-lg hover:shadow-purple-900/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:border-slate-700"
                   >
                     {loading ? (
                       <>
@@ -80,7 +80,6 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate }: 
                       </>
                     ) : (
                       <>
-                        <Play className="w-4 h-4 fill-current transition-transform group-hover:translate-x-0.5" />
                         <span>Launch Simulation</span>
                       </>
                     )}

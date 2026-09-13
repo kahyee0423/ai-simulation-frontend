@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Simulation",
+  title: "AI Simulation Laboratory",
   description: "An AI-powered simulation platform for interactive experiences.",
 };
 

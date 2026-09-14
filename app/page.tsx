@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Loader2, Code, Terminal, Cpu, Check, RefreshCw, GripHorizontal, FlaskConical, ShieldCheck, Sigma, ScanSearch } from "lucide-react";
+import { Play, Loader2, Code, Terminal, Cpu, Check, RefreshCw, GripHorizontal, FlaskConical, ShieldCheck, Sigma, ScanSearch, Globe } from "lucide-react";
 import { AgentStep, TabId, SimulationResult } from "./utils/type";
+import { SupportedLanguage, detectPromptLanguage, getTranslations } from "./utils/i18n";
 import HeroSection from "./components/HeroSection";
 import ResearchReport from "./components/ResearchReport";
 import CodeEditor from "./components/CodeEditor";
@@ -19,6 +20,13 @@ export default function Home() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(true);
   const [draggedTab, setDraggedTab] = useState<TabId | null>(null);
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const [selectedLang, setSelectedLang] = useState<SupportedLanguage>("auto");
+
+  // Determine active UI language: explicit override -> result language -> auto prompt detect -> English default
+  const effectiveLang = selectedLang !== "auto"
+    ? selectedLang
+    : (result?.language || (prompt.trim() ? detectPromptLanguage(prompt) : "English"));
+  const t = getTranslations(effectiveLang);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/simulate";
 
@@ -38,7 +46,10 @@ export default function Home() {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          prompt,
+          language: selectedLang !== "auto" ? selectedLang : "auto"
+        }),
       });
 
       const data = await response.json();
@@ -117,182 +128,209 @@ export default function Home() {
   return (
     <main className="h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 p-4 md:p-6 flex flex-col selection:bg-indigo-500 selection:text-white">
       <div className="w-full mx-auto flex flex-col h-full">
-        {hasStarted ? (
-          <div className="flex items-center justify-between shrink-0">
+        {/* Top App Bar with Language Selector */}
+        <div className="flex items-center justify-between shrink-0 mb-1">
+          {hasStarted ? (
             <h1 className="text-xl font-extrabold tracking-tight text-slate-200">
-              AI Simulation Laboratory
+              {t.appTitle}
             </h1>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[11px] font-semibold tracking-wide uppercase border border-indigo-500/20 shadow-sm">
-              <Cpu className="w-3 h-3" /> Powered by Gemini & LangGraph
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold tracking-wider text-indigo-400 uppercase">
+                {t.appTitle}
+              </span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2.5">
+            {/* Language Selector Dropdown */}
+            <div className="relative inline-flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 shadow-sm hover:border-slate-700 transition-all">
+              <Globe className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <select
+                value={selectedLang}
+                onChange={(e) => setSelectedLang(e.target.value as SupportedLanguage)}
+                className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer pr-1"
+                aria-label="Select interface language"
+              >
+                <option value="auto" className="bg-slate-900 text-slate-200">Auto ({effectiveLang})</option>
+                <option value="English" className="bg-slate-900 text-slate-200">English</option>
+                <option value="Chinese" className="bg-slate-900 text-slate-200">中文 (Chinese)</option>
+                <option value="Spanish" className="bg-slate-900 text-slate-200">Español (Spanish)</option>
+                <option value="French" className="bg-slate-900 text-slate-200">Français (French)</option>
+                <option value="German" className="bg-slate-900 text-slate-200">Deutsch (German)</option>
+                <option value="Japanese" className="bg-slate-900 text-slate-200">日本語 (Japanese)</option>
+              </select>
+            </div>
+
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[11px] font-semibold tracking-wide uppercase border border-indigo-500/20 shadow-sm">
+              <Cpu className="w-3 h-3" /> {t.poweredBy}
             </div>
           </div>
+        </div>
+
+        {!hasStarted ? (
+          <HeroSection prompt={prompt} setPrompt={setPrompt} loading={loading} onSimulate={handleSimulate} t={t} />
         ) : (
-          <HeroSection prompt={prompt} setPrompt={setPrompt} loading={loading} onSimulate={handleSimulate} />
-        )}
+          <>
+            {/* Compact input bar after launch */}
+            <div className="transition-all duration-300 shrink-0 pt-1.5 w-full mx-auto">
+              <form onSubmit={handleSimulate} className="flex gap-3 items-start">
+                <div className="relative flex-1">
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
+                    }}
+                    placeholder={t.inputPlaceholder}
+                    rows={1}
+                    className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-xs md:text-sm resize-none shadow-inner transition-all max-h-40 leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  />
+                </div>
 
-        {/* Compact input bar after launch (items-start enabled for auto-growth) */}
-        {hasStarted && (
-          <div className="transition-all duration-300 shrink-0 pt-2.5 w-full mx-auto">
-            <form onSubmit={handleSimulate} className="flex gap-3 items-start">
-              <div className="relative flex-1">
-                <textarea
-                  value={prompt}
-                  onChange={(e) => {
-                    setPrompt(e.target.value);
-                    // Auto-grow height logic
-                    e.target.style.height = 'auto';
-                    e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
-                  }}
-                  placeholder="e.g., Simulate 50 delivery drones navigating through a 10x10 city grid..."
-                  rows={1}
-                  className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-xs md:text-sm resize-none shadow-inner transition-all max-h-40 leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                />
-              </div>
+                <button
+                  type="submit"
+                  disabled={loading || !prompt.trim()}
+                  className="flex items-center justify-center gap-2 bg-transparent border border-slate-700 hover:border-purple-500 text-white font-medium rounded-xl transition-all shadow-lg text-xs md:text-sm whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed px-6 py-2.5 shrink-0 h-[42px]"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                      <span>{t.running}</span>
+                    </>
+                  ) : (
+                    <span>{t.launchAgent}</span>
+                  )}
+                </button>
+              </form>
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading || !prompt.trim()}
-                className="flex items-center justify-center gap-2 bg-transparent border border-slate-700 hover:border-purple-500 text-white font-medium rounded-xl transition-all shadow-lg text-xs md:text-sm whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed px-6 py-2.5 shrink-0 h-[42px]"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
-                    <span>Running...</span>
-                  </>
-                ) : (
-                  <><span>Launch Agent</span>
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Main Split Layout */}
-        {hasStarted && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 pb-2 mt-2.5">
-            
-            <ResearchReport currentStep={currentStep} result={result} loading={loading} />
-
-            {/* RIGHT COLUMN: IDE & Workspace */}
-            <div className="lg:col-span-6 bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-2xl flex flex-col h-full overflow-hidden shadow-2xl">
+            {/* Main Split Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 pb-2 mt-2.5">
               
-              {/* Workspace Navigation Header */}
-              <div 
-                onDragOver={handleDragOver}
-                onDrop={handleHeaderDrop}
-                className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/60 px-4 pt-2 shrink-0"
-              >
-                <div className="flex gap-2">
-                  {tabOrder.map((tab) => {
-                    if (tab === "output" && isBottomDocked) return null;
+              <ResearchReport currentStep={currentStep} result={result} loading={loading} t={t} />
 
-                    return (
-                      <div
-                        key={tab}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, tab)}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleTabDrop(e, tab)}
-                        onClick={() => setActiveTab(tab)}
-                        className={`flex items-center gap-1.5 px-3 py-2 font-medium text-xs rounded-t-lg transition-all border-t border-x cursor-grab active:cursor-grabbing ${
-                          activeTab === tab && !isBottomDocked
-                            ? "bg-slate-900 border-slate-800 text-indigo-400 shadow-sm"
-                            : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40"
-                        }`}
-                      >
-                        <GripHorizontal className="w-3 h-3 opacity-40" />
-                        {tab === "code" ? (
-                          <>
-                            <Code className="w-3.5 h-3.5" /> Python IDE
-                          </>
-                        ) : (
-                          <>
-                            <Terminal className="w-3.5 h-3.5" /> Terminal Output
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+              {/* RIGHT COLUMN: IDE & Workspace */}
+              <div className="lg:col-span-6 bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-2xl flex flex-col h-full overflow-hidden shadow-2xl">
+                
+                {/* Workspace Navigation Header */}
+                <div 
+                  onDragOver={handleDragOver}
+                  onDrop={handleHeaderDrop}
+                  className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/60 px-4 pt-2 shrink-0"
+                >
+                  <div className="flex gap-2">
+                    {tabOrder.map((tab) => {
+                      if (tab === "output" && isBottomDocked) return null;
 
-                {/* Status Badge */}
-                <div className="flex items-center gap-2 pb-1">
-                  {currentStep === "parsing" && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
-                      <Loader2 className="w-3 h-3 animate-spin" /> Parsing scenario...
-                    </span>
-                  )}
-                  {currentStep === "planning" && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
-                      <Loader2 className="w-3 h-3 animate-spin" /> Planning...
-                    </span>
-                  )}
-                  {currentStep === "critiquing" && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">
-                      <ShieldCheck className="w-3 h-3 animate-pulse" /> Critic reviewing...
-                    </span>
-                  )}
-                  {currentStep === "executing" && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">
-                      <FlaskConical className="w-3 h-3 animate-bounce" /> Simulating...
-                    </span>
-                  )}
-                  {currentStep === "validating" && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-teal-400 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full">
-                      <ScanSearch className="w-3 h-3 animate-pulse" /> Validating results...
-                    </span>
-                  )}
-                  {currentStep === "analyzing" && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full">
-                      <Sigma className="w-3 h-3 animate-pulse" /> Analyzing...
-                    </span>
-                  )}
-                  {currentStep === "retrying" && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
-                      <RefreshCw className="w-3 h-3 animate-spin" /> Fixing error...
-                    </span>
-                  )}
-                  {currentStep === "completed" && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                      <Check className="w-3 h-3" /> Ready
-                    </span>
-                  )}
-                </div>
-              </div>
+                      return (
+                        <div
+                          key={tab}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, tab)}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleTabDrop(e, tab)}
+                          onClick={() => setActiveTab(tab)}
+                          className={`flex items-center gap-1.5 px-3 py-2 font-medium text-xs rounded-t-lg transition-all border-t border-x cursor-grab active:cursor-grabbing ${
+                            activeTab === tab && !isBottomDocked
+                              ? "bg-slate-900 border-slate-800 text-indigo-400 shadow-sm"
+                              : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40"
+                          }`}
+                        >
+                          <GripHorizontal className="w-3 h-3 opacity-40" />
+                          {tab === "code" ? (
+                            <>
+                              <Code className="w-3.5 h-3.5" /> {t.pythonIde}
+                            </>
+                          ) : (
+                            <>
+                              <Terminal className="w-3.5 h-3.5" /> {t.terminalOutput}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
 
-              {/* Workspace Content */}
-              <div 
-                onDragOver={handleDragOver}
-                onDrop={handleEditorDrop}
-                className="p-4 flex-1 flex flex-col min-h-0"
-              >
-                {!isBottomDocked ? (
-                  <div className="flex-1 flex flex-col min-h-0">
-                    {activeTab === "code" ? (
-                      <CodeEditor result={result} loading={loading} />
-                    ) : (
-                      <TerminalOutput result={result} loading={loading} />
+                  {/* Status Badge */}
+                  <div className="flex items-center gap-2 pb-1">
+                    {currentStep === "parsing" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
+                        <Loader2 className="w-3 h-3 animate-spin" /> {t.parsingScenarioStatus}
+                      </span>
+                    )}
+                    {currentStep === "planning" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                        <Loader2 className="w-3 h-3 animate-spin" /> {t.planningStatus}
+                      </span>
+                    )}
+                    {currentStep === "critiquing" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">
+                        <ShieldCheck className="w-3 h-3 animate-pulse" /> {t.criticReviewingStatus}
+                      </span>
+                    )}
+                    {currentStep === "executing" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">
+                        <FlaskConical className="w-3 h-3 animate-bounce" /> {t.simulatingStatus}
+                      </span>
+                    )}
+                    {currentStep === "validating" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-teal-400 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full">
+                        <ScanSearch className="w-3 h-3 animate-pulse" /> {t.validatingResultsStatus}
+                      </span>
+                    )}
+                    {currentStep === "analyzing" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full">
+                        <Sigma className="w-3 h-3 animate-pulse" /> {t.analyzingStatus}
+                      </span>
+                    )}
+                    {currentStep === "retrying" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
+                        <RefreshCw className="w-3 h-3 animate-spin" /> {t.running}
+                      </span>
+                    )}
+                    {currentStep === "completed" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                        <Check className="w-3 h-3" /> {t.ready}
+                      </span>
                     )}
                   </div>
-                ) : (
-                  <div className="flex-1 flex flex-col min-h-0 gap-3">
-                    <CodeEditor result={result} loading={loading} />
-                    <TerminalOutput 
-                      result={result} 
-                      loading={loading} 
-                      isBottomDocked={true}
-                      isTerminalOpen={isTerminalOpen}
-                      setIsTerminalOpen={setIsTerminalOpen}
-                      onDragStart={(e) => handleDragStart(e, "output")}
-                    />
-                  </div>
-                )}
+                </div>
+
+                <div 
+                  onDragOver={handleDragOver}
+                  onDrop={handleEditorDrop}
+                  className="p-4 flex-1 flex flex-col min-h-0"
+                >
+                  {!isBottomDocked ? (
+                    <div className="flex-1 flex flex-col min-h-0">
+                      {activeTab === "code" ? (
+                        <CodeEditor result={result} loading={loading} t={t} />
+                      ) : (
+                        <TerminalOutput result={result} loading={loading} t={t} />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col min-h-0 gap-3">
+                      <CodeEditor result={result} loading={loading} t={t} />
+                      <TerminalOutput 
+                        result={result} 
+                        loading={loading} 
+                        isBottomDocked={true}
+                        isTerminalOpen={isTerminalOpen}
+                        setIsTerminalOpen={setIsTerminalOpen}
+                        onDragStart={(e) => handleDragStart(e, "output")}
+                        t={t}
+                      />
+                    </div>
+                  )}
+                </div>
+
               </div>
 
             </div>
-
-          </div>
+          </>
         )}
 
       </div>

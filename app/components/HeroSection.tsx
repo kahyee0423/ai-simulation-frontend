@@ -1,13 +1,15 @@
 import { Cpu, Play, Loader2 } from "lucide-react";
+import { Translations } from "../utils/i18n";
 
 interface HeroSectionProps {
   prompt: string;
   setPrompt: (val: string) => void;
   loading: boolean;
   onSimulate: (e: React.FormEvent) => void;
+  t: Translations;
 }
 
-export default function HeroSection({ prompt, setPrompt, loading, onSimulate }: HeroSectionProps) {
+export default function HeroSection({ prompt, setPrompt, loading, onSimulate, t }: HeroSectionProps) {
   return (
     <section className="relative flex-1 min-h-0 flex items-center justify-center overflow-hidden py-6 md:py-10">
       <div className="pointer-events-none absolute inset-0">
@@ -19,45 +21,41 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate }: 
 
       <div className="relative z-10 w-full max-w-5xl">
         <div className="text-center">
-
-          <h1 className="mt-5 text-5xl md:text-7xl font-bold tracking-[-0.04em] leading-[0.95] bg-gradient-to-r bg-clip-text">
-            AI Simulation Laboratory
+          <h1 className="mt-5 text-4xl md:text-6xl font-bold tracking-tight leading-tight bg-gradient-to-r from-slate-100 via-indigo-200 to-slate-300 bg-clip-text text-transparent">
+            {t.heroTitle}
           </h1>
 
-          <p className="mt-5 max-w-2xl mx-auto text-sm md:text-base text-slate-400 leading-7">
-            Turn a research hypothesis into a reproducible simulation.
-            <br />
-            <span className="text-slate-300">Plan → Code → Execute → Analyze</span>
-            {" "}with an autonomous multi-agent workflow.
+          <p className="mt-4 max-w-2xl mx-auto text-xs md:text-sm text-slate-400 leading-relaxed">
+            {t.heroSubtitle}
           </p>
 
-          <div className="mt-5 flex items-center justify-center gap-5 text-[11px] text-slate-500">
-            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-indigo-400" /> Natural language</span>
+          <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-slate-500">
+            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-indigo-400" /> Natural Language</span>
             <span className="h-3 w-px bg-slate-800" />
-            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-purple-400" /> Generated code</span>
+            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-purple-400" /> Python Code</span>
             <span className="h-3 w-px bg-slate-800" />
-            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-pink-400" /> Research report</span>
+            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-pink-400" /> Research Report</span>
           </div>
         </div>
 
         {/* Prompt area */}
-        <div className="mt-9 max-w-4xl mx-auto">
+        <div className="mt-7 max-w-4xl mx-auto">
           <div className="relative rounded-3xl border border-slate-700/70 bg-slate-900/85 backdrop-blur-2xl p-2 shadow-2xl shadow-black/40 ring-1 ring-white/[0.03]">
             <div className="rounded-[1.35rem] border border-slate-800/80 bg-slate-950/80 p-4 md:p-5">
               <form onSubmit={onSimulate}>
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.14em]">
-                    Research Scenario
+                <div className="flex items-center justify-between mb-2.5 px-1">
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    {t.appTitle}
                   </label>
-                  <span className="text-[10px] text-slate-600">Describe what you want to simulate</span>
+                  <span className="text-[10px] text-slate-500">{t.poweredBy}</span>
                 </div>
 
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g. Simulate 50 delivery drones navigating through a 10×10 city grid..."
+                  placeholder={t.inputPlaceholder}
                   rows={3}
-                  className="w-full h-28 bg-transparent border-0 px-1 text-sm md:text-base text-slate-200 placeholder-slate-600 focus:outline-none resize-none leading-7"
+                  className="w-full h-24 bg-transparent border-0 px-1 text-xs md:text-sm text-slate-200 placeholder-slate-600 focus:outline-none resize-none leading-relaxed"
                 />
 
                 <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-800/80 pt-3">
@@ -65,22 +63,22 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate }: 
                     <Cpu className="w-3.5 h-3.5 text-indigo-400" />
                     Gemini + LangGraph
                     <span className="text-slate-700">•</span>
-                    Autonomous execution
+                    Autonomous Simulation
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading || !prompt.trim()}
-                    className="group inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-transparent px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:border-purple-500 hover:text-white hover:shadow-lg hover:shadow-purple-900/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:border-slate-700"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-transparent px-5 py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:border-purple-500 hover:text-white hover:shadow-lg hover:shadow-purple-900/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:border-slate-700"
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Running...</span>
+                        <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                        <span>{t.running}</span>
                       </>
                     ) : (
                       <>
-                        <span>Launch Simulation</span>
+                        <span>{t.launchAgent}</span>
                       </>
                     )}
                   </button>
@@ -91,18 +89,15 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate }: 
 
           {/* Example prompts */}
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {[
-              "Drone routing in a city",
-              "Epidemic spread model",
-              "Multi-agent resource allocation",
-            ].map((example) => (
+            {t.samplePrompts.map((example, idx) => (
               <button
-                key={example}
+                key={idx}
                 type="button"
-                onClick={() => setPrompt(example)}
-                className="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1.5 text-[10px] text-slate-500 transition-colors hover:border-indigo-500/30 hover:bg-indigo-500/5 hover:text-slate-300"
+                onClick={() => setPrompt(example.prompt)}
+                className="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1.5 text-[10px] text-slate-400 transition-colors hover:border-indigo-500/30 hover:bg-indigo-500/10 hover:text-slate-200"
+                title={example.prompt}
               >
-                {example}
+                {example.label}
               </button>
             ))}
           </div>

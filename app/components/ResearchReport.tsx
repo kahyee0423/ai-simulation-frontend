@@ -5,18 +5,22 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { FileText, Download } from "lucide-react";
 import { AgentStep, SimulationResult } from "../utils/type";
+import { Translations, TRANSLATIONS } from "../utils/i18n";
 import SimulationSpec from "./SimulationSpec";
 import StatsSummary from "./StatsSummary";
+import HypothesisPanel from "./HypothesisPanel";
 
 interface ResearchReportProps {
   currentStep: AgentStep;
   result: SimulationResult | null;
   loading: boolean;
+  t?: Translations;
 }
 
-export default function ResearchReport({ currentStep, result, loading }: ResearchReportProps) {
+export default function ResearchReport({ currentStep, result, loading, t = TRANSLATIONS.English }: ResearchReportProps) {
   const reportRef = useRef<HTMLDivElement>(null);
   const hasSpec = Boolean(result?.simulation_spec);
+  const hasHypothesis = Boolean(result?.hypothesis_analysis);
   const hasStats = Boolean(result?.statistical_summary);
   const hasReport = Boolean(result?.report);
   const isCompleted = currentStep === "completed";
@@ -37,13 +41,13 @@ export default function ResearchReport({ currentStep, result, loading }: Researc
           <title>AI Simulation Research Report</title>
           <style>
             @page {
-              margin: 20mm;
+              margin: 40mm 40mm 20mm 20mm; /* Added top page margin to prevent content hugging the top edge */
             }
             body {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
               color: #1e293b;
               line-height: 1.7;
-              padding: 20px;
+              padding: 0 20px 20px 20px;
               max-width: 800px;
               margin: 0 auto;
             }
@@ -52,17 +56,17 @@ export default function ResearchReport({ currentStep, result, loading }: Researc
               color: #0f172a;
               border-bottom: 2px solid #cbd5e1;
               padding-bottom: 12px;
-              margin-top: 0;
+              margin-top: 10px;
               margin-bottom: 24px;
             }
-            /* Section titles with top spacing and forced page break separation safety */
+            /* Section titles with top breathing room so they never stick to the page top */
             h2 {
               font-size: 16px;
               font-weight: 700;
               color: #0f172a;
-              margin-top: 48px;
+              margin-top: 40px;
               margin-bottom: 16px;
-              padding-top: 16px; /* Creates breathing room if forced to top of a new page */
+              padding-top: 16px;
               padding-bottom: 6px;
               border-bottom: 1.5px solid #cbd5e1;
               break-after: avoid;
@@ -71,7 +75,7 @@ export default function ResearchReport({ currentStep, result, loading }: Researc
             h3 {
               font-size: 14px;
               color: #334155;
-              margin-top: 20px;
+              margin-top: 24px;
               margin-bottom: 8px;
               break-after: avoid;
               page-break-after: avoid;
@@ -79,9 +83,9 @@ export default function ResearchReport({ currentStep, result, loading }: Researc
             p, li {
               font-size: 13px;
               color: #334155;
-              margin-bottom: 10px;
-              break-inside: avoid;
-              page-break-inside: avoid;
+              margin-bottom: 12px;
+              orphans: 3;
+              widows: 3;
             }
             ul, ol {
               margin-top: 4px;
@@ -138,7 +142,7 @@ export default function ResearchReport({ currentStep, result, loading }: Researc
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/60 px-4 py-3 shrink-0">
         <h3 className="text-xs font-semibold text-slate-200 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-indigo-400" /> Research Report
+          <FileText className="w-4 h-4 text-indigo-400" /> {t.researchReport}
         </h3>
         
         <div className="flex items-center gap-2">
@@ -146,19 +150,19 @@ export default function ResearchReport({ currentStep, result, loading }: Researc
             <button
               onClick={handleExportPDF}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-medium transition-all shadow-sm"
-              title="Export Report as PDF"
+              title={t.exportPdf}
             >
-              <Download className="w-3.5 h-3.5" /> Export PDF
+              <Download className="w-3.5 h-3.5" /> {t.exportPdf}
             </button>
           )}
 
           {isCompleted && hasReport ? (
             <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-              Ready
+              {t.ready}
             </span>
           ) : (
             <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 font-medium">
-              {loading ? "Running pipeline..." : "Pending Analysis..."}
+              {loading ? t.runningPipeline : t.pendingAnalysis}
             </span>
           )}
         </div>
@@ -168,11 +172,15 @@ export default function ResearchReport({ currentStep, result, loading }: Researc
       <div className="p-4 flex-1 overflow-y-auto min-h-0 flex flex-col gap-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
 
         {/* Simulation Spec — hidden automatically when hasStats is true */}
-        <SimulationSpec result={result} loading={loading} hasStats={hasStats} />
+        <SimulationSpec result={result} loading={loading} hasStats={hasStats} t={t} />
+
+        {/* {(hasHypothesis || (loading && hasSpec)) && (
+          <HypothesisPanel result={result} loading={loading} t={t} />
+        )} */}
 
         {/* Stats Summary */}
         {(hasStats || (loading && hasSpec)) && (
-          <StatsSummary result={result} loading={loading} />
+          <StatsSummary result={result} loading={loading} t={t} />
         )}
 
         {/* LLM Research Report */}
@@ -193,13 +201,13 @@ export default function ResearchReport({ currentStep, result, loading }: Researc
         ) : !loading ? (
           <div className="text-center space-y-3 py-16 text-slate-500">
             <FileText className="w-10 h-10 mx-auto opacity-20 text-indigo-400 animate-pulse" />
-            <p className="text-xs">Waiting for simulation trial to complete...</p>
+            <p className="text-xs">{t.waitingForTrial}</p>
           </div>
         ) : !hasSpec ? (
           <div className="text-center space-y-3 py-16 text-slate-500">
             <FileText className="w-10 h-10 mx-auto opacity-20 text-indigo-400 animate-pulse" />
             <p className="text-xs">
-              Agent is parsing scenario &amp; compiling simulation plan...
+              {t.parsingScenarioStatus}
             </p>
           </div>
         ) : null}

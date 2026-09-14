@@ -1,16 +1,15 @@
-// frontend/src/components/StatsSummary.tsx
-"use client";
-
 import { BarChart3, CheckCircle2, AlertTriangle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { SimulationResult } from "../utils/type";
+import { Translations, TRANSLATIONS } from "../utils/i18n";
 
 interface StatsSummaryProps {
   result: SimulationResult | null;
   loading: boolean;
+  t?: Translations;
 }
 
-export default function StatsSummary({ result, loading }: StatsSummaryProps) {
+export default function StatsSummary({ result, loading, t = TRANSLATIONS.English }: StatsSummaryProps) {
   const summary = result?.statistical_summary;
   const criticApproved = result?.critic_approved;
   const criticFeedback = result?.critic_feedback;
@@ -24,22 +23,22 @@ export default function StatsSummary({ result, loading }: StatsSummaryProps) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/60">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-semibold text-slate-200">Statistical Analysis</span>
+          <span className="text-xs font-semibold text-slate-200">{t.statsTitle}</span>
         </div>
 
         {hasCriticData ? (
           criticApproved ? (
             <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-              <CheckCircle2 className="w-3 h-3" /> Critic Approved
+              <CheckCircle2 className="w-3 h-3" /> {t.statsCriticApproved}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-              <AlertTriangle className="w-3 h-3" /> Critic Issues
+              <AlertTriangle className="w-3 h-3" /> {t.statsCriticIssues}
             </span>
           )
         ) : (
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">
-            Python-computed
+            {t.statsPythonComputed}
           </span>
         )}
       </div>
@@ -47,7 +46,7 @@ export default function StatsSummary({ result, loading }: StatsSummaryProps) {
       {/* Body */}
       <div className="px-4 py-3">
         {loading && !summary ? (
-          <p className="text-xs text-slate-500 italic animate-pulse">Computing statistics...</p>
+          <p className="text-xs text-slate-500 italic animate-pulse">{t.statsComputing}</p>
         ) : summary ? (
           <div className="prose prose-invert prose-slate max-w-none text-xs leading-relaxed
             [&_table]:w-full [&_table]:text-xs [&_table]:border-collapse

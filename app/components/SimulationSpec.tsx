@@ -5,9 +5,12 @@ import { useState } from "react";
 import { Network, ChevronDown, ChevronRight } from "lucide-react";
 import { SimulationResult } from "../utils/type";
 
+import { Translations, TRANSLATIONS } from "../utils/i18n";
+
 interface SimSpec {
   domain?: string;
   methodology?: string;
+  methodology_hint?: string;
   objective?: string;
   time_horizon?: { steps?: number | string; unit?: string } | string | number;
   num_runs?: number | string;
@@ -20,9 +23,10 @@ interface SimulationSpecProps {
   result: SimulationResult | null;
   loading: boolean;
   hasStats: boolean;
+  t?: Translations;
 }
 
-export default function SimulationSpec({ result, loading, hasStats }: SimulationSpecProps) {
+export default function SimulationSpec({ result, loading, hasStats, t = TRANSLATIONS.English }: SimulationSpecProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Hide component completely once stats summary is ready
@@ -48,11 +52,11 @@ export default function SimulationSpec({ result, loading, hasStats }: Simulation
       >
         <div className="flex items-center gap-2">
           <Network className="w-4 h-4 text-violet-400" />
-          <span className="text-xs font-semibold text-slate-200">Simulation Specification</span>
+          <span className="text-xs font-semibold text-slate-200">{t.simSpecTitle}</span>
         </div>
         <div className="flex items-center gap-2">
           {loading && !specObj && (
-            <span className="text-[10px] text-slate-500 animate-pulse">Parsing scenario...</span>
+            <span className="text-[10px] text-slate-500 animate-pulse">{t.specParsing}</span>
           )}
           {isExpanded ? (
             <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
@@ -66,18 +70,18 @@ export default function SimulationSpec({ result, loading, hasStats }: Simulation
       {isExpanded && (
         <div className="border-t border-slate-800/60 px-4 py-3 space-y-4">
           {!specObj && !loading && (
-            <p className="text-xs text-slate-500 italic">No specification available yet.</p>
+            <p className="text-xs text-slate-500 italic">{t.specNoData}</p>
           )}
 
           {specObj && (
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <SpecField label="Domain" value={specObj.domain ?? "—"} accent="violet" />
-              <SpecField label="Methodology" value={specObj.methodology ?? "—"} accent="indigo" />
-              <SpecField label="Objective" value={specObj.objective ?? "—"} accent="slate" fullWidth />
+              <SpecField label={t.specDomain} value={specObj.domain ?? "—"} accent="violet" />
+              <SpecField label={t.specMethodology} value={specObj.methodology ?? specObj.methodology_hint ?? "—"} accent="indigo" />
+              <SpecField label={t.specObjective} value={specObj.objective ?? "—"} accent="slate" fullWidth />
 
               {specObj.time_horizon && (
                 <SpecField
-                  label="Time Horizon"
+                  label={t.specTimeHorizon}
                   value={
                     typeof specObj.time_horizon === "object"
                       ? `${specObj.time_horizon.steps ?? ""} ${specObj.time_horizon.unit ?? ""}`
@@ -86,11 +90,11 @@ export default function SimulationSpec({ result, loading, hasStats }: Simulation
                   accent="cyan"
                 />
               )}
-              <SpecField label="Simulation Runs" value={String(specObj.num_runs ?? "—")} accent="cyan" />
+              <SpecField label={t.specRuns} value={String(specObj.num_runs ?? "—")} accent="cyan" />
 
               {Array.isArray(specObj.entities) && specObj.entities.length > 0 && (
                 <div className="col-span-2">
-                  <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">Entities</p>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">{t.specEntities}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {specObj.entities.map((e, i) => {
                       const name = typeof e === "object" && e !== null ? (e.name ?? `Entity ${i + 1}`) : String(e);
@@ -112,7 +116,7 @@ export default function SimulationSpec({ result, loading, hasStats }: Simulation
 
               {Array.isArray(specObj.outcomes) && specObj.outcomes.length > 0 && (
                 <div className="col-span-2">
-                  <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">Outcome Metrics</p>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">{t.specOutcomes}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {specObj.outcomes.map((o, i) => (
                       <span

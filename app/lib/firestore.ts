@@ -23,6 +23,7 @@ export interface UserRecord {
   simulationResult?: unknown;
   allowlisted: boolean;
   isRegistered?: boolean;
+  isAdmin?: boolean;
   organization?: string;
   createdAt: unknown;
   lastLoginAt: unknown;

@@ -27,6 +27,7 @@ interface AuthContextValue {
   userRecord: UserRecord | null;
   isRegistered: boolean | null; // null = still loading
   allowlisted: boolean | null; // null = still loading
+  isAdmin: boolean;
   loading: boolean;
   signInWithGoogle: () => Promise<User | null>;
   registerUser: (extra?: { displayName?: string; organization?: string }) => Promise<void>;
@@ -42,6 +43,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
   const [allowlisted, setAllowlisted] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Derive isAdmin: email in NEXT_PUBLIC_ADMIN_EMAILS list OR isAdmin flag on Firestore record
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const isAdmin =
+    (!!user?.email && adminEmails.includes(user.email.toLowerCase())) ||
+    !!userRecord?.isAdmin;
 
   const refreshUserRecord = async (currentUser?: User | null) => {
     const target = currentUser !== undefined ? currentUser : user;
@@ -106,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userRecord,
         isRegistered,
         allowlisted,
+        isAdmin,
         loading,
         signInWithGoogle,
         registerUser,

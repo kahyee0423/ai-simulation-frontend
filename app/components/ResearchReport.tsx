@@ -25,7 +25,10 @@ export default function ResearchReport({ currentStep, result, loading, t = TRANS
   const hasReport = Boolean(result?.report);
   const isCompleted = currentStep === "completed";
   const cleanedReport = result?.report
-    ? result.report.replace(/^(#{1,3})\s+\d+[\.\)]\s*/gm, "$1 ")
+    ? result.report
+        .replace(/^(#{1,3})\s+\d+[\.\)]\s*/gm, "$1 ")
+        .replace(/##\s*Statistical Analysis \(Python-computed\)[\s\S]*?(?=\n##|\Z)/gi, "")
+        .replace(/###\s*Experiment Metadata[\s\S]*?(?=\n###|\n##|\Z)/gi, "")
     : "";
 
   const handleExportPDF = () => {
@@ -178,8 +181,8 @@ export default function ResearchReport({ currentStep, result, loading, t = TRANS
           <HypothesisPanel result={result} loading={loading} t={t} />
         )} */}
 
-        {/* Stats Summary */}
-        {(hasStats || (loading && hasSpec)) && (
+        {/* Stats Summary — shown during pipeline execution until final research report is ready */}
+        {(!isCompleted || !hasReport) && (hasStats || (loading && hasSpec)) && (
           <StatsSummary result={result} loading={loading} t={t} />
         )}
 

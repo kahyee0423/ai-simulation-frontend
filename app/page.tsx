@@ -14,7 +14,7 @@ import { useAuth } from "./context/AuthContext";
 import { recordSimulation } from "./lib/firestore";
 
 function HomeContent() {
-  const { user, userRecord, refreshUserRecord } = useAuth();
+  const { user, userRecord, isAdmin, refreshUserRecord } = useAuth();
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
@@ -25,9 +25,9 @@ function HomeContent() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(true);
   const [draggedTab, setDraggedTab] = useState<TabId | null>(null);
   const [result, setResult] = useState<SimulationResult | null>(null);
-  const [selectedLang, setSelectedLang] = useState<SupportedLanguage>("auto");
+  const [selectedLang, setSelectedLang] = useState<SupportedLanguage>("English");
 
-  const isUsageLimitReached = !!userRecord && userRecord.usageCount >= 1;
+  const isUsageLimitReached = !isAdmin && !!userRecord && userRecord.usageCount >= 1;
 
   // Restore previous simulation result if user has already run a simulation
   useEffect(() => {
@@ -44,10 +44,10 @@ function HomeContent() {
     }
   }, [userRecord, result, isUsageLimitReached, hasStarted]);
 
-  // Determine active UI language: explicit override -> result language -> auto prompt detect -> English default
+  // Determine active UI language: explicit selection -> result language -> English
   const effectiveLang = selectedLang !== "auto"
     ? selectedLang
-    : (result?.language || (prompt.trim() ? detectPromptLanguage(prompt) : "English"));
+    : (result?.language || "English");
   const t = getTranslations(effectiveLang);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/simulate";
@@ -189,7 +189,6 @@ function HomeContent() {
                 className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer pr-1"
                 aria-label="Select interface language"
               >
-                <option value="auto" className="bg-slate-900 text-slate-200">Auto ({effectiveLang})</option>
                 <option value="English" className="bg-slate-900 text-slate-200">English</option>
                 <option value="Chinese" className="bg-slate-900 text-slate-200">中文 (Chinese)</option>
                 <option value="Spanish" className="bg-slate-900 text-slate-200">Español (Spanish)</option>

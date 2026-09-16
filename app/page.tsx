@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Play, Loader2, Code, Terminal, Cpu, Check, RefreshCw, GripHorizontal, FlaskConical, ShieldCheck, Sigma, ScanSearch, Globe } from "lucide-react";
 import { AgentStep, TabId, SimulationResult } from "./utils/type";
 import { SupportedLanguage, detectPromptLanguage, getTranslations } from "./utils/i18n";
@@ -8,8 +8,13 @@ import HeroSection from "./components/HeroSection";
 import ResearchReport from "./components/ResearchReport";
 import CodeEditor from "./components/CodeEditor";
 import TerminalOutput from "./components/TerminalOutput";
+import AuthGuard from "./components/AuthGuard";
+import UserBadge from "./components/UserBadge";
+import { useAuth } from "./context/AuthContext";
+import { recordSimulation } from "./lib/firestore";
 
-export default function Home() {
+function HomeContent() {
+  const { user, userRecord, refreshUserRecord } = useAuth();
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
@@ -22,6 +27,23 @@ export default function Home() {
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>("auto");
 
+  const isUsageLimitReached = !!userRecord && userRecord.usageCount >= 1;
+
+  // Restore previous simulation result if user has already run a simulation
+  useEffect(() => {
+    if (userRecord?.simulationResult && !result) {
+      setResult(userRecord.simulationResult as SimulationResult);
+      if (userRecord.simulationPrompt) {
+        setPrompt(userRecord.simulationPrompt);
+      }
+      setHasStarted(true);
+      setCurrentStep("completed");
+    } else if (isUsageLimitReached && userRecord?.simulationPrompt && !hasStarted) {
+      setPrompt(userRecord.simulationPrompt);
+      setHasStarted(true);
+    }
+  }, [userRecord, result, isUsageLimitReached, hasStarted]);
+
   // Determine active UI language: explicit override -> result language -> auto prompt detect -> English default
   const effectiveLang = selectedLang !== "auto"
     ? selectedLang
@@ -33,6 +55,11 @@ export default function Home() {
   const handleSimulate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
+
+    if (isUsageLimitReached) {
+      alert("You have already used your 1 simulation grant. Please contact your administrator if you need your usage reset.");
+      return;
+    }
 
     setLoading(true);
     setHasStarted(true);
@@ -63,6 +90,16 @@ export default function Home() {
           setTimeout(() => setCurrentStep("completed"), 1500);
         } else {
           setCurrentStep("completed");
+        }
+
+        // Record simulation usage & result in Firestore AFTER successful simulation
+        if (user) {
+          try {
+            await recordSimulation(user.uid, prompt, data);
+            await refreshUserRecord();
+          } catch (firestoreErr) {
+            console.error("Failed to record simulation usage:", firestoreErr);
+          }
         }
       } else {
         setCurrentStep("error");
@@ -165,15 +202,34 @@ export default function Home() {
             <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[11px] font-semibold tracking-wide uppercase border border-indigo-500/20 shadow-sm">
               <Cpu className="w-3 h-3" /> {t.poweredBy}
             </div>
+
+            {/* User badge */}
+            <UserBadge />
           </div>
         </div>
 
         {!hasStarted ? (
-          <HeroSection prompt={prompt} setPrompt={setPrompt} loading={loading} onSimulate={handleSimulate} t={t} />
+          <HeroSection
+            prompt={prompt}
+            setPrompt={setPrompt}
+            loading={loading}
+            onSimulate={handleSimulate}
+            t={t}
+            isLimitReached={isUsageLimitReached}
+          />
         ) : (
           <>
             {/* Compact input bar after launch */}
             <div className="transition-all duration-300 shrink-0 pt-1.5 w-full mx-auto">
+              {isUsageLimitReached && (
+                <div className="mb-2 py-1 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                    <span className="truncate">Simulation grant used (1/1). You can review your code, logs, and report below.</span>
+                  </div>
+                  <span className="text-[10px] font-semibold bg-amber-500/20 px-2 py-0.5 rounded shrink-0">1/1 Limit</span>
+                </div>
+              )}
               <form onSubmit={handleSimulate} className="flex gap-3 items-start">
                 <div className="relative flex-1">
                   <textarea
@@ -183,15 +239,16 @@ export default function Home() {
                       e.target.style.height = 'auto';
                       e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
                     }}
-                    placeholder={t.inputPlaceholder}
+                    placeholder={isUsageLimitReached ? "Simulation limit reached (1/1 run used)." : t.inputPlaceholder}
+                    disabled={isUsageLimitReached || loading}
                     rows={1}
-                    className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-xs md:text-sm resize-none shadow-inner transition-all max-h-40 leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                    className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-xs md:text-sm resize-none shadow-inner transition-all max-h-40 leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading || !prompt.trim()}
+                  disabled={isUsageLimitReached || loading || !prompt.trim()}
                   className="flex items-center justify-center gap-2 bg-transparent border border-slate-700 hover:border-purple-500 text-white font-medium rounded-xl transition-all shadow-lg text-xs md:text-sm whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed px-6 py-2.5 shrink-0 h-[42px]"
                 >
                   {loading ? (
@@ -199,6 +256,8 @@ export default function Home() {
                       <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
                       <span>{t.running}</span>
                     </>
+                  ) : isUsageLimitReached ? (
+                    <span>Limit Reached</span>
                   ) : (
                     <span>{t.launchAgent}</span>
                   )}
@@ -335,5 +394,13 @@ export default function Home() {
 
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <AuthGuard>
+      <HomeContent />
+    </AuthGuard>
   );
 }

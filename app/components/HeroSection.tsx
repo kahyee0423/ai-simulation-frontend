@@ -7,9 +7,17 @@ interface HeroSectionProps {
   loading: boolean;
   onSimulate: (e: React.FormEvent) => void;
   t: Translations;
+  isLimitReached?: boolean;
 }
 
-export default function HeroSection({ prompt, setPrompt, loading, onSimulate, t }: HeroSectionProps) {
+export default function HeroSection({
+  prompt,
+  setPrompt,
+  loading,
+  onSimulate,
+  t,
+  isLimitReached = false,
+}: HeroSectionProps) {
   return (
     <section className="relative flex-1 min-h-0 flex items-center justify-center overflow-hidden py-6 md:py-10">
       <div className="pointer-events-none absolute inset-0">
@@ -53,10 +61,18 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate, t 
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={t.inputPlaceholder}
+                  placeholder={isLimitReached ? "Simulation limit reached (1/1 run used). Contact administrator to reset." : t.inputPlaceholder}
+                  disabled={isLimitReached || loading}
                   rows={3}
-                  className="w-full h-24 bg-transparent border-0 px-1 text-xs md:text-sm text-slate-200 placeholder-slate-600 focus:outline-none resize-none leading-relaxed"
+                  className="w-full h-24 bg-transparent border-0 px-1 text-xs md:text-sm text-slate-200 placeholder-slate-600 focus:outline-none resize-none leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed"
                 />
+
+                {isLimitReached && (
+                  <div className="mt-2 py-1.5 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex items-center justify-between">
+                    <span>You have used your 1 simulation grant.</span>
+                    <span className="text-[10px] font-semibold bg-amber-500/20 px-2 py-0.5 rounded">Limit Reached</span>
+                  </div>
+                )}
 
                 <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-800/80 pt-3">
                   <div className="flex items-center gap-2 text-[11px] text-slate-500">
@@ -68,7 +84,7 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate, t 
 
                   <button
                     type="submit"
-                    disabled={loading || !prompt.trim()}
+                    disabled={isLimitReached || loading || !prompt.trim()}
                     className="group inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-transparent px-5 py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:border-purple-500 hover:text-white hover:shadow-lg hover:shadow-purple-900/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:border-slate-700"
                   >
                     {loading ? (
@@ -76,6 +92,8 @@ export default function HeroSection({ prompt, setPrompt, loading, onSimulate, t 
                         <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
                         <span>{t.running}</span>
                       </>
+                    ) : isLimitReached ? (
+                      <span>Limit Reached (1/1)</span>
                     ) : (
                       <>
                         <span>{t.launchAgent}</span>

@@ -1,4 +1,4 @@
-# AI Simulation Scientist — Frontend Application 🌐🔬
+# AI Simulation Laboratory (Frontend Part) 🌐🔬
 
 A modern, responsive web application and scientific research interface for the **Universal AI Simulation Laboratory**, built with **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, **Framer Motion**, and **Firebase**.
 
@@ -26,7 +26,6 @@ A modern, responsive web application and scientific research interface for the *
 - **Firebase Authentication**: Full user lifecycle support:
   - Registration with email verification (`/register`)
   - Secure login (`/login`)
-  - Password recovery & reset (`/forgot-password`, `/reset-password`)
   - Auth guards preventing unauthorized access to simulation features (`AuthGuard.tsx`).
 - **Usage Quotas & Limits**: Enforces per-user simulation quotas (tracked in Firestore).
 - **Admin Command Center (`/admin`)**:

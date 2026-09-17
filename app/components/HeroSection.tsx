@@ -1,4 +1,4 @@
-import { Cpu, Play, Loader2 } from "lucide-react";
+import { Cpu, Loader2 } from "lucide-react";
 import { Translations } from "../utils/i18n";
 
 interface HeroSectionProps {

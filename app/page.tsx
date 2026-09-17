@@ -40,18 +40,32 @@ function HomeContent() {
   }, []);
 
   useEffect(() => {
-    // pagehide fires on tab close, back/forward navigation (including bfcache).
-    const handlePageHide = () => clearSession();
-    // visibilitychange fires when the tab is hidden/closed on mobile and some desktop browsers.
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") clearSession();
+    // 1. Browser Back/Forward navigation: wipe in-memory state so previous run cannot be seen
+    const handlePopState = () => {
+      clearSession();
     };
 
+    // 2. bfcache restoration (user clicked back button to return to page from cache): clear immediately
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        clearSession();
+      }
+    };
+
+    // 3. Tab close, window close, or navigate away: clear session
+    // Note: We deliberately do NOT listen to visibilitychange, so minimizing the window or switching tabs keeps memory intact.
+    const handlePageHide = () => {
+      clearSession();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("pagehide", handlePageHide);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("pagehide", handlePageHide);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [clearSession]);
 

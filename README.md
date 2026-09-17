@@ -1,4 +1,4 @@
-# AI Simulation Laboratory (Frontend Part) 🌐🔬
+# AI Simulation Laboratory (Frontend Part)
 
 A modern, responsive web application and scientific research interface for the **Universal AI Simulation Laboratory**, built with **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, **Framer Motion**, and **Firebase**.
 

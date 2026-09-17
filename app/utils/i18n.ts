@@ -98,7 +98,7 @@ export const TRANSLATIONS: Record<string, Translations> = {
     heroTitle: "Assumption-Aware Simulation",
     heroSubtitle: "Transform natural language scenarios into rigorous, multi-branch scientific simulation models with explicit assumption provenance, Bayesian hypothesis updating, parameter sensitivity sweeps and Monte Carlo uncertainty quantification.",
     inputPlaceholder: "e.g., Simulate 50 delivery drones navigating through a 10x10 city grid in rainy weather...",
-    launchAgent: "Launch Agent",
+    launchAgent: "Launch Simulation",
     running: "Running...",
     pythonIde: "Python IDE",
     terminalOutput: "Terminal Output",

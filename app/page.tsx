@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Play, Loader2, Code, Terminal, Cpu, Check, RefreshCw, GripHorizontal, FlaskConical, ShieldCheck, Sigma, ScanSearch, Globe } from "lucide-react";
 import { AgentStep, TabId, SimulationResult } from "./utils/type";
 import { SupportedLanguage, detectPromptLanguage, getTranslations } from "./utils/i18n";
@@ -29,20 +29,31 @@ function HomeContent() {
 
   const isUsageLimitReached = !isAdmin && !!userRecord && userRecord.usageCount >= 1;
 
-  // Restore previous simulation result if user has already run a simulation
+  // Clear in-memory state when the user leaves the page (tab close, back button, navigate away).
+  // Results remain in Firestore only for usage-limit enforcement — they are never re-displayed.
+  const clearSession = useCallback(() => {
+    setResult(null);
+    setPrompt("");
+    setHasStarted(false);
+    setCurrentStep("idle");
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
-    if (userRecord?.simulationResult && !result) {
-      setResult(userRecord.simulationResult as SimulationResult);
-      if (userRecord.simulationPrompt) {
-        setPrompt(userRecord.simulationPrompt);
-      }
-      setHasStarted(true);
-      setCurrentStep("completed");
-    } else if (isUsageLimitReached && userRecord?.simulationPrompt && !hasStarted) {
-      setPrompt(userRecord.simulationPrompt);
-      setHasStarted(true);
-    }
-  }, [userRecord, result, isUsageLimitReached, hasStarted]);
+    // pagehide fires on tab close, back/forward navigation (including bfcache).
+    const handlePageHide = () => clearSession();
+    // visibilitychange fires when the tab is hidden/closed on mobile and some desktop browsers.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") clearSession();
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [clearSession]);
 
   // Determine active UI language: explicit selection -> result language -> English
   const effectiveLang = selectedLang !== "auto"

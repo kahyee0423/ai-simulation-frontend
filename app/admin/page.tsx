@@ -473,13 +473,13 @@ export default function AdminPage() {
             {[
               {
                 id: "overview" as AdminTab,
-                label: "Overview & KPIs",
+                label: "Overview",
                 icon: BarChart3,
                 badge: null,
               },
               {
                 id: "users" as AdminTab,
-                label: "Researchers & Quotas",
+                label: "Users & Quotas",
                 icon: Users,
                 badge: stats.total,
               },

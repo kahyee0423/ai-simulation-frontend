@@ -75,7 +75,14 @@ function HomeContent() {
     : (result?.language || "English");
   const t = getTranslations(effectiveLang);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/simulate";
+  const rawApiUrl =
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "http://localhost:8000";
+
+  const API_URL = rawApiUrl.endsWith("/api/simulate")
+    ? rawApiUrl
+    : `${rawApiUrl.replace(/\/+$/, "")}/api/simulate`;
 
   const handleSimulate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,7 +141,7 @@ function HomeContent() {
       clearTimeout(timer1);
       console.error(err);
       setCurrentStep("error");
-      alert("Failed to connect to backend server. Make sure your FastAPI backend is running locally on port 8000.");
+      alert(`Failed to connect to backend server (${API_URL}). If using Render free-tier, it may take 50–60 seconds to wake up from sleep. Please check your network and try again.`);
     } finally {
       setLoading(false);
     }

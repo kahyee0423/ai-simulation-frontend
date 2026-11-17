@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Play, Loader2, Code, Terminal, Cpu, Check, RefreshCw, GripHorizontal, FlaskConical, ShieldCheck, Sigma, ScanSearch, Globe } from "lucide-react";
+import { Play, Loader2, Code, Terminal, Cpu, Check, RefreshCw, GripHorizontal, FlaskConical, ShieldCheck, Sigma, ScanSearch, Globe, BarChart3, Sparkles } from "lucide-react";
 import { AgentStep, TabId, SimulationResult } from "./utils/type";
 import { SupportedLanguage, detectPromptLanguage, getTranslations } from "./utils/i18n";
 import HeroSection from "./components/HeroSection";
 import ResearchReport from "./components/ResearchReport";
 import CodeEditor from "./components/CodeEditor";
 import TerminalOutput from "./components/TerminalOutput";
+import ChartVisualizer from "./components/ChartVisualizer";
 import AuthGuard from "./components/AuthGuard";
 import UserBadge from "./components/UserBadge";
 import { useAuth } from "./context/AuthContext";
@@ -19,8 +20,8 @@ function HomeContent() {
   const [loading, setLoading] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentStep, setCurrentStep] = useState<AgentStep>("idle");
-  const [activeTab, setActiveTab] = useState<TabId>("code");
-  const [tabOrder, setTabOrder] = useState<TabId[]>(["code", "output"]);
+  const [activeTab, setActiveTab] = useState<TabId>("chart");
+  const [tabOrder, setTabOrder] = useState<TabId[]>(["chart", "code", "output"]);
   const [isBottomDocked, setIsBottomDocked] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(true);
   const [draggedTab, setDraggedTab] = useState<TabId | null>(null);
@@ -117,6 +118,9 @@ function HomeContent() {
 
       if (response.ok) {
         setResult(data);
+        if (data.chart) {
+          setActiveTab("chart");
+        }
         if (data.error && data.error.length > 0) {
           setCurrentStep("retrying");
           setTimeout(() => setCurrentStep("completed"), 1500);
@@ -195,12 +199,18 @@ function HomeContent() {
   };
 
   return (
-    <main className="h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 p-4 md:p-6 flex flex-col selection:bg-indigo-500 selection:text-white">
-      <div className="w-full mx-auto flex flex-col h-full">
+    <main className="h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 p-4 md:p-6 flex flex-col selection:bg-indigo-500 selection:text-white relative">
+      {/* Ambient Cyber-Scientific Glows */}
+      <div className="absolute -top-32 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -right-32 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="w-full mx-auto flex flex-col h-full relative z-10">
         {/* Top App Bar with Language Selector */}
         <div className="flex items-center justify-between shrink-0 mb-1">
           {hasStarted ? (
-            <h1 className="text-xl font-extrabold tracking-tight text-slate-200">
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-200 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               {t.appTitle}
             </h1>
           ) : (
@@ -329,7 +339,13 @@ function HomeContent() {
                           }`}
                         >
                           <GripHorizontal className="w-3 h-3 opacity-40" />
-                          {tab === "code" ? (
+                          {tab === "chart" ? (
+                            <>
+                              <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>Empirical Figures</span>
+                              {result?.chart && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse ml-0.5" />}
+                            </>
+                          ) : tab === "code" ? (
                             <>
                               <Code className="w-3.5 h-3.5" /> {t.pythonIde}
                             </>
@@ -395,7 +411,9 @@ function HomeContent() {
                 >
                   {!isBottomDocked ? (
                     <div className="flex-1 flex flex-col min-h-0">
-                      {activeTab === "code" ? (
+                      {activeTab === "chart" ? (
+                        <ChartVisualizer chart={result?.chart} loading={loading} t={t} />
+                      ) : activeTab === "code" ? (
                         <CodeEditor result={result} loading={loading} t={t} />
                       ) : (
                         <TerminalOutput result={result} loading={loading} t={t} />
@@ -403,7 +421,11 @@ function HomeContent() {
                     </div>
                   ) : (
                     <div className="flex-1 flex flex-col min-h-0 gap-3">
-                      <CodeEditor result={result} loading={loading} t={t} />
+                      {activeTab === "chart" ? (
+                        <ChartVisualizer chart={result?.chart} loading={loading} t={t} />
+                      ) : (
+                        <CodeEditor result={result} loading={loading} t={t} />
+                      )}
                       <TerminalOutput 
                         result={result} 
                         loading={loading} 

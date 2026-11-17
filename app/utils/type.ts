@@ -1,5 +1,5 @@
 export type AgentStep = "idle" | "parsing" | "planning" | "critiquing" | "executing" | "validating" | "analyzing" | "retrying" | "completed" | "error";
-export type TabId = "code" | "output" | "spec" | "stats";
+export type TabId = "code" | "output" | "spec" | "stats" | "chart";
 
 export interface SimulationResult {
   status?: string;
@@ -16,4 +16,5 @@ export interface SimulationResult {
   statistical_summary?: string;   // Phase 5: Statistics
   report?: string;                // Phase 6: Report
   language?: string;              // Output language
+  chart?: string;                 // Scientific Figure (Base64 data URL)
 }

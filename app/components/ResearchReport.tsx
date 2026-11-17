@@ -103,6 +103,15 @@ export default function ResearchReport({ currentStep, result, loading, t = TRANS
               break-inside: avoid;
               page-break-inside: avoid;
             }
+            img {
+              max-width: 100%;
+              height: auto;
+              break-inside: avoid;
+              page-break-inside: avoid;
+              border-radius: 6px;
+              border: 1px solid #cbd5e1;
+              margin: 16px 0;
+            }
             th, td {
               border: 1px solid #cbd5e1;
               padding: 10px 14px;
@@ -199,6 +208,30 @@ export default function ResearchReport({ currentStep, result, loading, t = TRANS
               [&_td]:border [&_td]:border-slate-800 [&_td]:p-2.5 [&_td]:text-slate-300
               [&_tr:nth-child(even)_td]:bg-slate-900/40"
           >
+            {/* Scientific Figure 1 (Embedded in Research Report & PDF Export) */}
+            {result?.chart && (
+              <div className="not-prose my-6 p-4 rounded-xl border border-slate-800 bg-slate-900/80 shadow-xl break-inside-avoid">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="text-xs font-bold text-slate-100">
+                      Figure 1: Empirical Simulation Results & Bayesian Belief Shift
+                    </span>
+                  </div>
+
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={result.chart}
+                  alt="Figure 1: Empirical Simulation Results"
+                  className="w-full h-auto rounded-lg border border-slate-800/80 shadow-md mx-auto"
+                />
+                <p className="text-[11px] text-slate-400 italic mt-2.5 mb-0">
+                  Visualized empirical posterior shifts, state variable distributions, and numerical confidence bounds synthesized during in-silico simulation runs.
+                </p>
+              </div>
+            )}
+
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanedReport}</ReactMarkdown>
           </div>
         ) : !loading ? (

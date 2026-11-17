@@ -55,6 +55,7 @@ export interface Translations {
   statsCriticIssues: string;
   statsPythonComputed: string;
   statsComputing: string;
+  chartVisualizer: string;
   samplePrompts: Array<{ label: string; prompt: string }>;
 }
 
@@ -147,6 +148,7 @@ export const TRANSLATIONS: Record<string, Translations> = {
     statsCriticIssues: "Critic Issues",
     statsPythonComputed: "Python-computed",
     statsComputing: "Computing statistics...",
+    chartVisualizer: "Scientific Empirical Figures",
     samplePrompts: [
       {
         label: "Drone Delivery Grid",
@@ -217,6 +219,7 @@ export const TRANSLATIONS: Record<string, Translations> = {
     statsCriticIssues: "审查存疑",
     statsPythonComputed: "Python计算",
     statsComputing: "正在计算统计数据...",
+    chartVisualizer: "科学实证图表",
     samplePrompts: [
       {
         label: "城市无人机配送",
@@ -287,6 +290,7 @@ export const TRANSLATIONS: Record<string, Translations> = {
     statsCriticIssues: "Problemas de Crítica",
     statsPythonComputed: "Calculado con Python",
     statsComputing: "Calculando estadísticas...",
+    chartVisualizer: "Figuras Empíricas Científicas",
     samplePrompts: [
       {
         label: "Entrega con Drones",
@@ -349,6 +353,7 @@ export const TRANSLATIONS: Record<string, Translations> = {
     statsCriticIssues: "Problèmes Critiqués",
     statsPythonComputed: "Calculé par Python",
     statsComputing: "Calcul des statistiques...",
+    chartVisualizer: "Figures Empiriques Scientifiques",
     samplePrompts: [
       {
         label: "Livraison par Drones",
@@ -411,6 +416,7 @@ export const TRANSLATIONS: Record<string, Translations> = {
     statsCriticIssues: "Kritikpunkte festgestellt",
     statsPythonComputed: "Python-berechnet",
     statsComputing: "Statistiken werden berechnet...",
+    chartVisualizer: "Wissenschaftliche Empirische Abbildungen",
     samplePrompts: [
       {
         label: "Drohnenlieferung",
@@ -473,6 +479,7 @@ export const TRANSLATIONS: Record<string, Translations> = {
     statsCriticIssues: "批評指摘あり",
     statsPythonComputed: "Python計算",
     statsComputing: "統計を計算中...",
+    chartVisualizer: "科学的実証図表",
     samplePrompts: [
       {
         label: "都市型ドローン配送",

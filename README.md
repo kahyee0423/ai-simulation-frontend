@@ -4,6 +4,8 @@ A modern, responsive web application and scientific research interface for the *
 
 ---
 
+AI Simulation Laboratory Backend: https://github.com/kahyee0423/ai-simulation-backend.git
+
 ## Features
 
 ### 1. Interactive Scientific Simulation Dashboard
